@@ -26,13 +26,29 @@ import 'rxjs/Rx';
             </form>
         </div>
     </div>
-</nav>
-<div><pre>@{{ name | json}}</pre></div>`
+</nav> 
+    <div class="container">
+    <div class="jumbotron" >
+        <template [ngIf]="error">    
+        </template>
+        <template [ngIf]="!name">        
+        </template>
+        <template [ngIf]="name">
+            <template [ngIf]="name.query.results !== null">
+                <h2 [innerHtml]="name.query.results.channel.item.title"> </h2>
+                <p [innerHtml]="name.query.results.channel.item.description"></p>
+            </template>  
+             <template [ngIf]="name.query.results === null">
+                <h2>Location Unavailable</h2>
+            </template>
+        </template>
+    </div>  
+</div>`
 
 })
 export class WeatherComponent implements OnInit {
     name: Object;
-
+    error: Object;
     @Input() result;
 
     constructor(private http: Http) {
@@ -40,18 +56,17 @@ export class WeatherComponent implements OnInit {
 
 
     onClick(value) {
-        console.log(value);
         return this.http.get('https://query.yahooapis.com/v1/public/yql?q=select * from weather.forecast where woeid in (select woeid from geo.places(1) where text="' + value + '")&format=json')
             .map(res => res.json())
             .subscribe(
                 (data) => {
                     this.name = data;
-                    console.log(data.query.results.channel.item.title);
-                    console.log(data.query.results.channel.item.description);
                 },
-                (err) => console.log("Error Loging In:", err),
+                (err) => {
+                    this.error = err;
+                },
                 () => {
-                    console.log("All Good With The Data")
+                    console.log("Success")
                 }
             );
     }
