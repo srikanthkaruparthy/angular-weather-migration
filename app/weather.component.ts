@@ -1,4 +1,5 @@
 import {Component, OnInit, Input} from 'angular2/core';
+import {Http} from 'angular2/http';
 import 'rxjs/Rx';
 
 @Component({
@@ -25,18 +26,36 @@ import 'rxjs/Rx';
             </form>
         </div>
     </div>
-</nav>`
+</nav>
+<div><pre>@{{ name | json}}</pre></div>`
+
 })
 export class WeatherComponent implements OnInit {
+    name: Object;
+
     @Input() result;
+
+    constructor(private http: Http) {
+    }
+
 
     onClick(value) {
         console.log(value);
-
+        return this.http.get('https://query.yahooapis.com/v1/public/yql?q=select * from weather.forecast where woeid in (select woeid from geo.places(1) where text="' + value + '")&format=json')
+            .map(res => res.json())
+            .subscribe(
+                (data) => {
+                    this.name = data;
+                    console.log(data.query.results.channel.item.title);
+                    console.log(data.query.results.channel.item.description);
+                },
+                (err) => console.log("Error Loging In:", err),
+                () => {
+                    console.log("All Good With The Data")
+                }
+            );
     }
 
-    constructor() {
-    }
 
     ngOnInit() {
 
